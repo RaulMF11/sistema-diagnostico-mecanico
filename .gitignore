@@ -1,0 +1,94 @@
+# ============================================================
+#   ARCHIVOS GENERALES
+# ============================================================
+
+# Dependencias
+node_modules/
+vendor/
+
+# Entornos
+.env
+.env.*
+*.env.local
+*.env.development
+*.env.production
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
+
+# IDEs
+.vscode/
+.vscode/*
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Build / Dist
+dist/
+build/
+*.cache
+
+# ============================================================
+#   BACKEND (Laravel, Node, PHP)
+# ============================================================
+
+# Laravel
+/storage/
+!/storage/app/public/
+bootstrap/cache/
+
+# Composer autoload
+/vendor/
+
+# PHP
+*.cache
+*.lock
+composer.lock
+# ============================================================
+#   IA (Python / modelos)
+# ============================================================
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+venv/
+.env/
+.venv/
+env/
+
+# Datos grandes / modelos
+*.ckpt
+*.pt
+*.pth
+*.pkl
+*.h5
+*.joblib
+*.onnx
+
+# Jupyter
+.ipynb_checkpoints/
+
+
+
+# ============================================================
+#   CACHE / TEMPORALES
+# ============================================================
+
+*.tmp
+*.temp
+tmp/
+temp/
+.cache/
