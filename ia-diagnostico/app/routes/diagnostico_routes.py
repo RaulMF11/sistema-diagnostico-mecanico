@@ -72,3 +72,21 @@ def diagnosticar(payload: DiagnosticoInput, servicio=Depends(get_servicio_ml)):
         # Manejo de errores durante la predicción
         print(f"Error durante la predicción: {e}")
         raise HTTPException(status_code=500, detail=f"Error interno del modelo durante la predicción: {str(e)}")
+    
+@router.post("/entrenar", summary="Entrena el modelo de IA nuevamente")
+def entrenar_modelo_api():
+
+    try:
+        modelo_handler.entrenar_modelo()
+
+        # Después de entrenar, volver a cargar el modelo
+        global _servicio_ml_instance
+        _servicio_ml_instance = modelo_handler.cargar_recursos()
+
+        return {"mensaje": "Modelo entrenado y recargado correctamente"}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al entrenar el modelo: {str(e)}"
+        )
