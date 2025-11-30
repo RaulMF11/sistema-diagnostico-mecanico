@@ -6,18 +6,18 @@ use Illuminate\Support\Facades\Http;
 
 class DiagnosticoService
 {
-    protected $url;
+    protected $baseUrl;
 
     public function __construct()
     {
         // URL del servicio de IA dentro de Docker
-        $this->url = 'http://ia-diagnostico:8000/diagnostico';
+        $this->baseUrl = rtrim(env('IA_API_URL'), '/');
     }
 
     public function generarDiagnostico(array $datos)
     {
         // Llamada POST a la IA con los datos
-        $response = Http::post($this->url, $datos);
+        $response = Http::post($this->baseUrl . '/diagnostico', $datos);
 
         if ($response->successful()) {
             return $response->json();
