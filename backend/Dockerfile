@@ -10,7 +10,9 @@ RUN apt-get update && apt-get install -y \
         unzip \
         git \
         curl \
-    && docker-php-ext-install pdo pdo_pgsql pgsql \
+        libzip-dev \
+        libonig-dev \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring zip \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copiar código al contenedor
@@ -23,8 +25,12 @@ RUN composer install --no-dev --optimize-autoloader
 # Habilitar mod_rewrite de Apache
 RUN a2enmod rewrite
 
+# Dar permisos a storage y bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
 # Exponer puerto 8000
-EXPOSE 8000
+EXPOSE 80
 
 # Comando por defecto
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+CMD ["apache2-foreground"]
