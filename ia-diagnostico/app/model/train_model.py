@@ -12,10 +12,25 @@ from sklearn.metrics import classification_report
 
 # --- FIX IMPORTANTE PARA RAILWAY ---
 # Asegurar que la raíz del proyecto esté en sys.path
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if ROOT_DIR not in sys.path:
-    sys.path.append(ROOT_DIR)
+# Detectar ruta real de ROOT en Railway
+CURRENT_FILE = os.path.abspath(__file__)
+MODEL_DIR = os.path.dirname(CURRENT_FILE)               # /app/app/model
+APP_DIR = os.path.dirname(MODEL_DIR)                   # /app/app
+ROOT_DIR = os.path.dirname(APP_DIR)                    # /app   ← REAL ROOT
 
+# Agregar ambos al sys.path por seguridad
+if APP_DIR not in sys.path:
+    sys.path.insert(0, APP_DIR)
+
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+print("DEBUG PATHS:")
+print("MODEL_DIR:", MODEL_DIR)
+print("APP_DIR:", APP_DIR)
+print("ROOT_DIR:", ROOT_DIR)
+
+# Ahora sí importa correctamente
 from app.model.preprocess import fit_transform_all, BASE_DIR, load_label_encoders
 
 # Path donde se guardará el modelo entrenado
