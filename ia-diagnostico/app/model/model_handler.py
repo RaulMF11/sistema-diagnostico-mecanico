@@ -61,30 +61,24 @@ def cargar_recursos():
     return ModeloServicio()
 
 def entrenar_modelo():
-    """
-    Ejecuta train_model.py dentro del contenedor Railway
-    """
     script_path = os.path.join(BASE_DIR, "train_model.py")
 
     if not os.path.exists(script_path):
-        raise FileNotFoundError(f"No existe train_model.py en: {script_path}")
+        raise FileNotFoundError(f"No existe train_model.py en {script_path}")
 
-    print("🚀 Ejecutando entrenamiento...")
+    print("🚀 ENTRENANDO MODELO...")
 
-    try:
-        result = subprocess.run(
-            ["python", script_path],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        print(result.stdout)
-    except subprocess.CalledProcessError as e:
-        print(e.stderr)
-        raise Exception(f"Error entrenando modelo: {e.stderr}")
+    result = subprocess.run(
+        ["python3", script_path],
+        capture_output=True,
+        text=True
+    )
 
-    if not os.path.exists(MODEL_PATH):
-        raise FileNotFoundError("⚠ El entrenamiento terminó pero no se generó modelo_multioutput.pkl")
+    print("STDOUT:", result.stdout)
+    print("STDERR:", result.stderr)
 
-    print("🎉 Modelo entrenado correctamente")
+    if result.returncode != 0:
+        raise Exception(f"Error al entrenar:\n{result.stderr}")
+
+    print("🎉 Entrenamiento completado.")
     return True

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel, Field
 from typing import Optional
 # IMPORTACIÓN CORREGIDA: Usamos el alias para acceder al módulo
@@ -59,13 +59,15 @@ class DiagnosticoInput(BaseModel):
 # ================================
 #   📌 RUTA PARA ENTRENAR MODELO
 # ================================
-@router.post("/entrenar", summary="Entrena el modelo IA en Railway")
-def entrenar_modelo():
-    try:
-        ok = modelo_handler.entrenar_modelo()
-        return {"status": "ok", "message": "Modelo entrenado y guardado correctamente"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# ----------- ENDPOINT PARA ENTRENAR ------------------
+@router.post("/entrenar", summary="Entrena el modelo en background")
+def entrenar_modelo(background: BackgroundTasks):
+    background.add_task(modelo_handler.entrenar_modelo)
+
+    return {
+        "status": "ok",
+        "mensaje": "Entrenamiento iniciado en segundo plano. Esto puede tardar 1–3 minutos."
+    }
 
 @router.post("/", summary="Realiza diagnóstico a partir de los datos")
 def diagnosticar(payload: DiagnosticoInput, servicio=Depends(get_servicio_ml)):
