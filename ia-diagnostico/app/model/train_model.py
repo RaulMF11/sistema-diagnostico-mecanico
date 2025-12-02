@@ -33,12 +33,11 @@ print("ROOT_DIR:", ROOT_DIR)
 # Ahora sí importa correctamente
 from app.model.preprocess import fit_transform_all, BASE_DIR, load_label_encoders
 
-# Path donde se guardará el modelo entrenado
-MODEL_PATH = os.path.join(BASE_DIR, "modelo_multioutput.pkl")
+# Guardar el modelo en la carpeta del script
+MODEL_PATH = os.path.join(MODEL_DIR, "modelo_multioutput.pkl")
+os.makedirs(MODEL_DIR, exist_ok=True)
 
 def entrenar():
-    os.makedirs(BASE_DIR, exist_ok=True) 
-
     print("📌 Entrenando: cargando y transformando datos...")
     X, y = fit_transform_all(csv_path="dataset.csv", save_artifacts=True)
 
