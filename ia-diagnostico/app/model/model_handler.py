@@ -1,6 +1,7 @@
 import os
 import joblib
 import numpy as np
+import subprocess
 
 from app.model.preprocess import (
     BASE_DIR,
@@ -58,3 +59,32 @@ class ModeloServicio:
 
 def cargar_recursos():
     return ModeloServicio()
+
+def entrenar_modelo():
+    """
+    Ejecuta train_model.py dentro del contenedor Railway
+    """
+    script_path = os.path.join(BASE_DIR, "train_model.py")
+
+    if not os.path.exists(script_path):
+        raise FileNotFoundError(f"No existe train_model.py en: {script_path}")
+
+    print("🚀 Ejecutando entrenamiento...")
+
+    try:
+        result = subprocess.run(
+            ["python", script_path],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        print(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(e.stderr)
+        raise Exception(f"Error entrenando modelo: {e.stderr}")
+
+    if not os.path.exists(MODEL_PATH):
+        raise FileNotFoundError("⚠ El entrenamiento terminó pero no se generó modelo_multioutput.pkl")
+
+    print("🎉 Modelo entrenado correctamente")
+    return True
