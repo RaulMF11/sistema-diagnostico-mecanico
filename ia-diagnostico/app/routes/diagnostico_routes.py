@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 # IMPORTACIÓN CORREGIDA: Usamos el alias para acceder al módulo
@@ -56,18 +56,6 @@ class DiagnosticoInput(BaseModel):
     voltaje_bateria: Optional[float] = Field(None, description="Voltaje de la batería (e.g., 12.5)")
     velocidad: Optional[float] = Field(None, description="Velocidad actual (km/h)")
     
-# ================================
-#   📌 RUTA PARA ENTRENAR MODELO
-# ================================
-# ----------- ENDPOINT PARA ENTRENAR ------------------
-@router.post("/entrenar", summary="Entrena el modelo en background")
-def entrenar_modelo(background: BackgroundTasks):
-    background.add_task(modelo_handler.entrenar_modelo)
-
-    return {
-        "status": "ok",
-        "mensaje": "Entrenamiento iniciado en segundo plano. Esto puede tardar 1–3 minutos."
-    }
 
 @router.post("/", summary="Realiza diagnóstico a partir de los datos")
 def diagnosticar(payload: DiagnosticoInput, servicio=Depends(get_servicio_ml)):
@@ -84,4 +72,3 @@ def diagnosticar(payload: DiagnosticoInput, servicio=Depends(get_servicio_ml)):
         # Manejo de errores durante la predicción
         print(f"Error durante la predicción: {e}")
         raise HTTPException(status_code=500, detail=f"Error interno del modelo durante la predicción: {str(e)}")
-    
