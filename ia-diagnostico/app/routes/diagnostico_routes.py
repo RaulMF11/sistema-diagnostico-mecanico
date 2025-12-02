@@ -56,6 +56,16 @@ class DiagnosticoInput(BaseModel):
     voltaje_bateria: Optional[float] = Field(None, description="Voltaje de la batería (e.g., 12.5)")
     velocidad: Optional[float] = Field(None, description="Velocidad actual (km/h)")
     
+# ================================
+#   📌 RUTA PARA ENTRENAR MODELO
+# ================================
+@router.post("/entrenar", summary="Entrena el modelo IA en Railway")
+def entrenar_modelo():
+    try:
+        ok = modelo_handler.entrenar_modelo()
+        return {"status": "ok", "message": "Modelo entrenado y guardado correctamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/", summary="Realiza diagnóstico a partir de los datos")
 def diagnosticar(payload: DiagnosticoInput, servicio=Depends(get_servicio_ml)):
