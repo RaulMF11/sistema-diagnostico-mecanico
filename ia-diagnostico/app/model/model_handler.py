@@ -1,47 +1,60 @@
 import os
 import joblib
-import pandas as pd
 import numpy as np
-from typing import Dict
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "modelo.pkl")
-PREPROCESSOR_PATH = os.path.join(os.path.dirname(__file__), "preprocessor.pkl")
+from app.model.preprocess import (
+    BASE_DIR,
+    load_label_encoders,
+    transform_single
+)
 
-def cargar_modelo():
-    """
-    Carga y devuelve (modelo, preprocessor).
-    """
-    if not os.path.exists(MODEL_PATH) or not os.path.exists(PREPROCESSOR_PATH):
-        raise FileNotFoundError("Modelo o preprocessor no encontrado. Entrena primero con training/train_model.py")
+MODEL_PATH = os.path.join(BASE_DIR, "modelo_multioutput.pkl")
 
-    modelo = joblib.load(MODEL_PATH)
-    preprocessor = joblib.load(PREPROCESSOR_PATH)
-    return modelo, preprocessor
 
-def predecir_caso(modelo, preprocessor, entrada: Dict):
-    """
-    Entrada: dict con keys: marca, modelo, anio, km, rpm, presion_aceite, temperatura_motor, descripcion
-    Retorna etiqueta predicha.
-    """
-    # Crear DataFrame de 1 fila con las columnas esperadas
-    df = pd.DataFrame([{
-        "marca": entrada.get("marca", None),
-        "modelo": entrada.get("modelo", None),
-        "anio": entrada.get("anio", None),
-        "km": entrada.get("km", None),
-        "rpm": entrada.get("rpm", None),
-        "presion_aceite": entrada.get("presion_aceite", None),
-        "temperatura_motor": entrada.get("temperatura_motor", None),
-        "descripcion": entrada.get("descripcion", "")
-    }])
+class ModeloServicio:
+    def __init__(self):
+        if not os.path.exists(MODEL_PATH):
+            raise FileNotFoundError(f"No se encontró el modelo entrenado en {MODEL_PATH}")
 
-    # Transformar con el preprocessor cargado
-    X = preprocessor.transform(df)
-    pred = modelo.predict(X)[0]
+        self.modelo = joblib.load(MODEL_PATH)
+        self.encoders = load_label_encoders()
 
-    # si el modelo soporta predict_proba:
-    prob = None
-    if hasattr(modelo, "predict_proba"):
-        prob = modelo.predict_proba(X).max()
+    def predecir(self, data_dict, umbral_confiabilidad=0.5):
 
-    return {"falla": str(pred), "probabilidad": float(prob) if prob is not None else None}
+        # Procesar entrada
+        X = transform_single(data_dict)  # <<<<<<<<<<<<<<<<<<<<<< USAR ESTA
+
+        # Convertir a 2D si fuera necesario
+        if X.ndim == 1:
+            X = X.reshape(1, -1)
+
+        pred = self.modelo.predict(X)[0]
+
+        # Decodificar
+        nombres = ["falla", "subfalla", "gravedad", "solucion"]
+        resultado = {}
+
+        for idx, nombre in enumerate(nombres):
+            enc = self.encoders[nombre]
+            clase_predicha = enc.inverse_transform([pred[idx]])[0]
+            probs = self.modelo.estimators_[idx].predict_proba(X)[0]
+            prob_pred = probs[pred[idx]]
+            segura = prob_pred >= umbral_confiabilidad
+            # decoded = enc.inverse_transform([pred[idx]])[0]
+            # resultado[nombre] = decoded
+            # Marcar si es incierto
+            if prob_pred < umbral_confiabilidad:
+                etiqueta_segura = False
+            else:
+                etiqueta_segura = True
+            resultado[nombre] = {
+            "prediccion": clase_predicha,
+            "confiabilidad": round(float(prob_pred), 4),  # 0.0 a 1.0
+            "segura": etiqueta_segura 
+            }
+
+        return resultado
+
+
+def cargar_recursos():
+    return ModeloServicio()

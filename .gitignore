@@ -73,7 +73,7 @@ env/
 *.ckpt
 *.pt
 *.pth
-*.pkl
+# *.pkl
 *.h5
 *.joblib
 *.onnx
