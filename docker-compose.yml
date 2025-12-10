@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  # Microservicio IA FastAPI
+  ia-diagnostico:
+    build:
+      context: ./ia-diagnostico
+    container_name: ia-diagnostico
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  # Backend Laravel
+  laravel-backend:
+    build:
+      context: ./backend
+    container_name: laravel-backend
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./backend:/var/www/html 
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: supabase
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      IA_URL: http://ia-diagnostico:8000/diagnostico
+    depends_on:
+      - db
+      - ia-diagnostico
+    restart: unless-stopped
+
+  # Frontend Vue
+  vue-frontend:
+    build:
+      context: ./frontend
+    container_name: vue-frontend
+    ports:
+      - "8080:8080"
+    environment:
+      VUE_APP_API_URL: http://laravel-backend:8001/api
+    depends_on:
+      - laravel-backend
+    restart: unless-stopped
+
+  # Base de datos Supabase (PostgreSQL)
+  db:
+    image: supabase/postgres:15.8.1.085
+    container_name: supabase-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: supabase
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  db_data:
